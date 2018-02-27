@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Odeskconf stat{% endblock %}
+
+{% block container %}
+  <div class='row'>
+    <div class='col-sm'>
+      <form class='form-inline'>
+        <div class='form-group mx-sm-3 mb-2'>
+          <input class='form-control' id='username' name='username'
+                 placeholder='Username'>
+        </div>
+        <button type='submit' class='btn btn-primary mb-2'>JUST DO IT!11
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if no_user %}
+    <div class='alert alert-primary' role='alert'>
+      {{ random.choice([
+          'anyway how’s your sex life?',
+          ':doge:',
+          ]) }}
+    </div>
+  {% endif %}
+
+  {% if ok %}
+    <div class='row'>
+      <div class='col'>
+        Messages: {{ messages_count }}
+        ({{ (messages_count / total_messages * 100.0) | round(2) }}%)
+      </div>
+    </div>
+
+    <div id='messagesChart' class='row'></div>
+
+    <div id='channelsPieChart' class='row'></div>
+
+    <div class='row'>
+      <div class='col-sm'>
+        <table class='table table-sm'>
+          <thead>
+          <tr>
+            <th scope='col'>Put Emoji</th>
+            <th scope='col'>Count ({{ put_emoji_count }})</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for emoji in put_emoji %}
+            <tr>
+              <td>{{ emoji['_id'] }}</td>
+              <td>{{ emoji['count'] }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class='col-sm'>
+        <table class='table table-sm'>
+          <thead>
+          <tr>
+            <th>Got Emoji</th>
+            <th>Count ({{ got_emoji_count }})</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for emoji in got_emoji %}
+            <tr>
+              <td>{{ emoji['_id'] }}</td>
+              <td>{{ emoji['count'] }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if ok %}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js'
+            integrity='sha256-hYXbQJK4qdJiAeDVjjQ9G0D6A0xLnDQ4eJI9dkm7Fpk='
+            crossorigin='anonymous'></script>
+    <script
+      src='https://cdnjs.cloudflare.com/ajax/libs/dimple/2.3.0/dimple.latest.min.js'
+      integrity='sha256-PRviM8taYu4dp2uprPdLNUB+FJcD6PeA2JacrvSEXyM='
+      crossorigin='anonymous'></script>
+    <script type='text/javascript'>
+        var data = {{ messages_by_date | tojson }};
+        var svg = dimple.newSvg('#messagesChart', '100%', 400);
+        var myChart = new dimple.chart(svg, data);
+        var x = myChart.addTimeAxis('x', 'Date', undefined, '%Y-%m');
+        x.addOrderRule('Date');
+        x.timePeriod = d3.timeMonth;
+        x.timeInterval = 2;
+        x.floatingBarWidth = 1;
+        myChart.addMeasureAxis('y', 'Count');
+        var s = myChart.addSeries(null, dimple.plot.bar);
+        s.barGap = 0;
+        s.getTooltipText = function (e) {
+            return [
+                (new Date(e.x)),
+                e.y
+            ];
+        };
+        myChart.draw();
+        myChart.svg.selectAll('.dimple-bar, .dimple-legend-key')
+            .style('stroke', 'none')
+            .style('opacity', '1');
+    </script>
+    <script type='text/javascript'>
+        var data = {{ channels | tojson }};
+        var svg = dimple.newSvg('#channelsPieChart', '100%', 400);
+        var myChart = new dimple.chart(svg, data);
+        myChart.setBounds(20, 20, 460, 360);
+        myChart.addMeasureAxis('p', 'Count');
+        var s = myChart.addSeries('Channel', dimple.plot.pie);
+        s.getTooltipText = function (e) {
+            return [
+                e.aggField[0],
+                e.p,
+                Number((e.piePct * 100.0).toFixed(2)) + '%'
+            ];
+        };
+        myChart.addLegend(500, 20, 90, 300, 'left');
+        myChart.draw();
+    </script>
+  {% endif %}
+{% endblock %}

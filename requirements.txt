@@ -1,0 +1,5 @@
+pymongo
+simplejson
+flask
+gunicorn
+markovify

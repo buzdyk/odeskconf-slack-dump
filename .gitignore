@@ -1,0 +1,7 @@
+dump/
+mongodata/
+venv/
+.idea/
+*.pyc
+__pycache__
+*.zip
